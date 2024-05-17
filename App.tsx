@@ -168,7 +168,7 @@ function MyTabs() {
                 headerShown: false,
             })}
         >
-            <Tab.Screen name="DriveMode" component={DriveModeScreen} />
+            <Tab.Screen name="DriveMode" component={DriveModeScreen}/>
             <Tab.Screen name="Chat" component={MessageScreen} />
             <Tab.Screen name="Main" component={MainScreen} />
             <Tab.Screen name="Home" component={HomeScreen} />

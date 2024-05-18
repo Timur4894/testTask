@@ -75,6 +75,28 @@ const DriveModeScreen = () => {
 };
 
 const DriveModeWrapper = ({ children }: { children: any }) => {
+    const [currentDate, setCurrentDate] = React.useState('');
+    const [currentTime, setCurrentTime] = React.useState('');
+
+    React.useEffect(() => {
+        const updateDateTime = () => {
+            const now = new Date();
+            const date = now.toLocaleDateString('ru-RU'); // формат даты для России
+            const time = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+            setCurrentDate(date);
+            setCurrentTime(time);
+        };
+
+        // Обновление даты и времени при монтировании компонента
+        updateDateTime();
+
+        // Установка интервала для обновления времени каждую минуту
+        const intervalId = setInterval(updateDateTime, 60000); // 60000 мс = 1 минута
+
+        // Очистка интервала при размонтировании компонента
+        return () => clearInterval(intervalId);
+    }, []);
+
     return (
         <View style={{ flex: 1 }}>
             {children}
@@ -100,10 +122,10 @@ const DriveModeWrapper = ({ children }: { children: any }) => {
 
                         <View style={{flexDirection: 'column', alignItems: 'flex-end'}}>
                             <Text style={{color: '#fff'}}>
-                                22.10.22
+                                {currentDate}
                             </Text>
                             <Text style={{color: '#665CD1'}}>
-                                12:00
+                                {currentTime}
                             </Text>
                         </View>
                     </View>

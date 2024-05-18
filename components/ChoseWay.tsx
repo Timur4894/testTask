@@ -1,9 +1,9 @@
 import React from 'react';
-import { StyleSheet, Pressable, Text } from 'react-native';
+import {StyleSheet, View, Text, Pressable} from 'react-native';
 
-const ChoseWay = () => {
+const ChoseWay = ({onPress} : any) => {
     return (
-        <Pressable style={styles.button} onPress={()=>{}}>
+        <Pressable style={styles.button} onPress={onPress}>
             <Text style={styles.text}>Обрати маршрут</Text>
         </Pressable>
     );

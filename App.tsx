@@ -1,59 +1,49 @@
 import * as React from 'react';
-import { NavigationContainer, useNavigation } from '@react-navigation/native';
+import { NavigationContainer, useNavigation, RouteProp } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View, Text, Image } from 'react-native';
-
 import More from './assets/icons/bottomtabs/MoreHorizontal';
 import Human from './assets/icons/bottomtabs/Human';
 import LogoCircle from './assets/icons/bottomtabs/LogoCircle';
 import Message from './assets/icons/bottomtabs/MessageSquare';
 import DriveWheel from './assets/icons/bottomtabs/DriveWheel';
-
 import DriveMode from '../AwesomeProject/screens/DriveMode';
+import { RouteProvider, useRoute } from './utils/RouteContext';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
-const HomeScreen = () => {
-    return (
-        <View style={styles.container}>
-            <Text>Home Screen</Text>
-        </View>
-    );
-};
+const HomeScreen = () => (
+    <View style={styles.container}>
+        <Text>Home Screen</Text>
+    </View>
+);
 
-const MessageScreen = () => {
-    return (
-        <View style={styles.container}>
-            <Text>Message Screen</Text>
-        </View>
-    );
-};
+const MessageScreen = () => (
+    <View style={styles.container}>
+        <Text>Message Screen</Text>
+    </View>
+);
 
-const SettingsScreen = () => {
-    return (
-        <View style={styles.container}>
-            <Text>Settings Screen</Text>
-        </View>
-    );
-};
+const SettingsScreen = () => (
+    <View style={styles.container}>
+        <Text>Settings Screen</Text>
+    </View>
+);
 
-const MainScreen = () => {
-    return (
-        <View style={styles.container}>
-            <Text>Main Screen</Text>
-        </View>
-    );
-};
+const MainScreen = () => (
+    <View style={styles.container}>
+        <Text>Main Screen</Text>
+    </View>
+);
 
 const DriveModeScreen = () => {
     const [screenTitle, setScreenTitle] = React.useState('Ваш маршрут прокладено');
     const navigation = useNavigation();
 
-    // Функция для изменения названия экрана
-    const updateScreenTitle = (newTitle) => {
+    const updateScreenTitle = (newTitle: string) => {
         setScreenTitle(newTitle);
     };
 
@@ -62,91 +52,73 @@ const DriveModeScreen = () => {
     }, [navigation, screenTitle]);
 
     return (
-        <Stack.Navigator
-            screenOptions={{
-                headerStyle: { backgroundColor: '#171717' },
-                headerTitleStyle: { color: '#665CD1' },
-                headerShadowVisible: false
-            }}
-        >
+        <Stack.Navigator screenOptions={stackScreenOptions}>
             <Stack.Screen name={screenTitle} component={() => <DriveModeWrapper><DriveMode /></DriveModeWrapper>} />
         </Stack.Navigator>
     );
 };
 
-const DriveModeWrapper = ({ children }: { children: any }) => {
+const stackScreenOptions = {
+    headerStyle: { backgroundColor: '#171717' },
+    headerTitleStyle: { color: '#665CD1' },
+    headerShadowVisible: false,
+};
+
+const DriveModeWrapper = ({ children }: { children: React.ReactNode }) => {
     const [currentDate, setCurrentDate] = React.useState('');
     const [currentTime, setCurrentTime] = React.useState('');
+    const [newDate, setNewDate] = React.useState('');
+    const [newTime, setNewTime] = React.useState('');
+
+    const { distance, duration, origin, destination } = useRoute();
 
     React.useEffect(() => {
         const updateDateTime = () => {
             const now = new Date();
-            const date = now.toLocaleDateString('ru-RU'); // формат даты для России
-            const time = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-            setCurrentDate(date);
-            setCurrentTime(time);
+            setCurrentDate(now.toLocaleDateString('uk-UA'));
+            setCurrentTime(now.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' }));
+
+            const newDateTime = new Date(now.getTime() + duration * 60000);
+            setNewDate(newDateTime.toLocaleDateString('uk-UA'));
+            setNewTime(newDateTime.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' }));
         };
 
-        // Обновление даты и времени при монтировании компонента
         updateDateTime();
 
-        // Установка интервала для обновления времени каждую минуту
-        const intervalId = setInterval(updateDateTime, 60000); // 60000 мс = 1 минута
+        const intervalId = setInterval(updateDateTime, 60000);
 
-        // Очистка интервала при размонтировании компонента
         return () => clearInterval(intervalId);
-    }, []);
+    }, [duration]);
 
     return (
         <View style={{ flex: 1 }}>
             {children}
             <View style={styles.additionalContent}>
-                <View style={{position: 'relative'}}>
+                <View style={styles.imageWrapper}>
                     <Image source={require('../AwesomeProject/assets/truck.jpeg')} style={styles.image} />
                     <View style={styles.imageTextContainer}>
-                        <Text style={styles.imageText}>
-                            AA 2345 AA
-                        </Text>
+                        <Text style={styles.imageText}>AA 2345 AA</Text>
                     </View>
                 </View>
-                <View style={{flexDirection: 'column'}}>
-                    <View style={{flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10,}}>
-                        <View style={{flexDirection: 'column'}}>
-                            <Text style={{color: '#fff'}}>
-                                Україна, м.Київ
-                            </Text>
-                            <Text style={{color: '#7E7E7E'}}>
-                                Антоновича, 176
-                            </Text>
+                <View style={styles.infoContainer}>
+                    <View style={styles.infoRow}>
+                        <View>
+                            <Text style={styles.textWhite}>{origin || 'Точка відправлення'}</Text>
+                            <Text style={styles.textGrey}>Антоновича, 176</Text>
                         </View>
-
-                        <View style={{flexDirection: 'column', alignItems: 'flex-end'}}>
-                            <Text style={{color: '#fff'}}>
-                                {currentDate}
-                            </Text>
-                            <Text style={{color: '#665CD1'}}>
-                                {currentTime}
-                            </Text>
+                        <View style={styles.infoRight}>
+                            <Text style={styles.textWhite}>{currentDate}</Text>
+                            <Text style={styles.textPurple}>{currentTime}</Text>
                         </View>
                     </View>
-
-                    <View style={{flexDirection: 'row'}}>
-                        <View style={{flexDirection: 'column', marginRight: 26}}>
-                            <Text style={{color: '#fff'}}>
-                                Польша, м.Люблін
-                            </Text>
-                            <Text style={{color: '#7E7E7E'}}>
-                                Kran’cowa, 41
-                            </Text>
+                    <View style={styles.infoRow}>
+                        <View>
+                            <Text style={styles.textWhite}>{destination || 'Точка прибуття'}</Text>
+                            <Text style={styles.textGrey}>Kran’cowa, 41</Text>
                         </View>
-
-                        <View style={{flexDirection: 'column', alignItems: 'flex-end'}}>
-                            <Text style={{color: '#fff'}}>
-                                01.11.22
-                            </Text>
-                            <Text style={{color: '#665CD1'}}>
-                                20:00
-                            </Text>
+                        <View style={styles.infoRight}>
+                            <Text style={styles.textWhite}>{newDate}</Text>
+                            <Text style={styles.textPurple}>{newTime}</Text>
                         </View>
                     </View>
                 </View>
@@ -157,40 +129,8 @@ const DriveModeWrapper = ({ children }: { children: any }) => {
 
 function MyTabs() {
     return (
-        <Tab.Navigator
-            screenOptions={({ route }) => ({
-                tabBarIcon: ({ focused, color, size }) => {
-                    let IconComponent;
-
-                    if (route.name === 'Home') {
-                        IconComponent = Human;
-                    } else if (route.name === 'DriveMode') {
-                        IconComponent = DriveWheel;
-                    } else if (route.name === 'Settings') {
-                        IconComponent = More;
-                    } else if (route.name === 'Chat') {
-                        IconComponent = Message;
-                    } else if (route.name === 'Main') {
-                        IconComponent = LogoCircle;
-                    }
-                    const iconColor = focused ? '#665CD1' : '#fff';
-                    return (
-                        <View style={[styles.iconContainer, focused && styles.focusedIcon]}>
-                            <IconComponent width={35} height={35} color={iconColor} />
-                        </View>
-                    );
-                },
-                tabBarStyle: {
-                    backgroundColor: '#171717',
-                    height: 85,
-                    paddingTop: 15,
-                    borderRadius: 30,
-                },
-                tabBarShowLabel: false,
-                headerShown: false,
-            })}
-        >
-            <Tab.Screen name="DriveMode" component={DriveModeScreen}/>
+        <Tab.Navigator screenOptions={tabScreenOptions}>
+            <Tab.Screen name="DriveMode" component={DriveModeScreen} />
             <Tab.Screen name="Chat" component={MessageScreen} />
             <Tab.Screen name="Main" component={MainScreen} />
             <Tab.Screen name="Home" component={HomeScreen} />
@@ -199,12 +139,49 @@ function MyTabs() {
     );
 }
 
+const tabScreenOptions = ({ route }: { route: RouteProp<Record<string, object | undefined>, string> }) => ({
+    tabBarIcon: ({ focused, color, size }: { focused: boolean; color: string; size: number }) => {
+        let IconComponent;
+
+        switch (route.name) {
+            case 'Home':
+                IconComponent = Human;
+                break;
+            case 'DriveMode':
+                IconComponent = DriveWheel;
+                break;
+            case 'Settings':
+                IconComponent = More;
+                break;
+            case 'Chat':
+                IconComponent = Message;
+                break;
+            case 'Main':
+                IconComponent = LogoCircle;
+                break;
+            default:
+                return null;
+        }
+        const iconColor = focused ? '#665CD1' : '#fff';
+        return (
+            <View style={[styles.iconContainer, focused && styles.focusedIcon]}>
+                <IconComponent width={35} height={35} color={iconColor} />
+            </View>
+        );
+    },
+    tabBarStyle: styles.tabBarStyle,
+    tabBarShowLabel: false,
+    headerShown: false,
+});
+
 export default function App() {
     return (
-        <NavigationContainer>
-            <StatusBar style="auto" />
-            <MyTabs />
-        </NavigationContainer>
+        <RouteProvider>
+            <NavigationContainer>
+                <StatusBar style="auto" />
+                <MyTabs />
+            </NavigationContainer>
+        </RouteProvider>
     );
 }
 
@@ -215,22 +192,27 @@ const styles = StyleSheet.create({
     },
     additionalContent: {
         alignItems: 'center',
-        flexDirection:'row',
-        justifyContent: 'center',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
         backgroundColor: '#171717',
-        paddingBottom: 16
+        paddingBottom: 16,
+    },
+    imageWrapper: {
+        position: 'relative',
     },
     image: {
         width: 130,
         height: 80,
         borderRadius: 7,
         marginRight: 6,
+        marginLeft: 20,
     },
     imageTextContainer: {
         position: 'absolute',
         bottom: 57,
         left: 0,
         right: 50,
+        marginLeft: 20,
     },
     imageText: {
         color: '#665CD1',
@@ -242,14 +224,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 4,
         borderRadius: 4,
         overflow: 'hidden',
-        fontWeight: '700'
-    },
-    titleText: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#fff',
-        textAlign: 'center',
-        marginTop: 10,
+        fontWeight: '700',
     },
     iconContainer: {
         justifyContent: 'center',
@@ -263,5 +238,34 @@ const styles = StyleSheet.create({
         borderRadius: 99,
         padding: 5,
         marginBottom: 12,
+    },
+    tabBarStyle: {
+        backgroundColor: '#171717',
+        height: 85,
+        paddingTop: 15,
+        borderRadius: 30,
+    },
+    infoContainer: {
+        flexDirection: 'column',
+        marginRight: 40,
+    },
+    infoRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 10,
+    },
+    infoRight: {
+        flexDirection: 'column',
+        alignItems: 'flex-end',
+        paddingLeft: 20,
+    },
+    textWhite: {
+        color: '#fff',
+    },
+    textGrey: {
+        color: '#7E7E7E',
+    },
+    textPurple: {
+        color: '#665CD1',
     },
 });
